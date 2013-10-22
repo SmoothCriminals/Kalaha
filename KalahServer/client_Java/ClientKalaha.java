@@ -224,16 +224,15 @@ public class ClientKalaha
 		tree.setAlpha((short)-32700);
 		maxCurrentDepth = 0;
 		newDepth = false;
+		nodeCount = 0;
 		millis = System.currentTimeMillis();
-		DLS2(tree, nodeDepth, output[14], output);
+		DLS(tree, 4, output[14], output);
 		print("Nodes: "+nodeCount);
 		System.out.println((System.currentTimeMillis())-millis);
-		nodeDepth = 9;
 		DLS2(tree, nodeDepth, output[14], output);
 		while(bestBoard.getParent().getChoise() != 10){
 			bestBoard = bestBoard.getParent();
 		}
-		print(nodeDepth);
 		System.out.println((System.currentTimeMillis())-millis);
 
 		return bestBoard.getChoise();
@@ -258,6 +257,44 @@ public class ClientKalaha
 	}
 
 	
+	public void DLS(AiNodeMaster node, int depth, int Max, char[] _board) {
+		char childBoard[];
+		short childNodeValue = (short)0;
+		int counter = 0;
+		boolean end = false;
+		
+		if (depth > 0) {				
+			for (int i = 1; i<7; i++) {
+				childBoard = node.move((short)i, (short)_board[14], _board.clone());
+				if (!Arrays.equals(childBoard, _board)) {
+					
+					if (Max == _board[14] && Max == 1) {
+						childNodeValue = (short)(node.getNodeValue() + ((childBoard[7] - childBoard[0])*depth));	
+						end = alphaBeta(node, true, childNodeValue, (short)32700);
+											
+					} else if (Max == _board[14] && Max == 2){
+						childNodeValue = (short)(node.getNodeValue() + ((childBoard[0] - childBoard[7])*depth));
+						end = alphaBeta(node, true, childNodeValue, (short)32700);
+					}
+					else if(Max != _board[14] && Max == 1){
+						childNodeValue = (short)(node.getNodeValue() - ((childBoard[0] - childBoard[7])*depth));
+						end = alphaBeta(node, false, (short)-32700, childNodeValue);
+					}
+					else if(Max != _board[14] && Max == 2){
+						childNodeValue = (short)(node.getNodeValue() - ((childBoard[7] - childBoard[0])*depth));
+						end = alphaBeta(node, false, (short)-32700, childNodeValue);
+					}
+					
+					if(!end){
+						nodeCount++;
+						node.childNode.add(new AiNodeMaster(node, childBoard, childNodeValue, (char)i));						
+						counter++;
+						DLS(node.childNode.get(counter-1), depth-1, Max, childBoard);	
+					}		
+				}	
+			}			
+		}
+	}
 
 	
 	public void DLS2(AiNodeMaster node, int depth, int Max, char[] _board) {
@@ -289,7 +326,6 @@ public class ClientKalaha
 					}
 					
 					if(!end){
-						nodeCount++;
 						node.childNode.add(new AiNodeMaster(node, childBoard, childNodeValue, (char)i));
 						if (nodeDepth == depth && counter == 0) {
 							bestBoard = node.childNode.get(counter);
