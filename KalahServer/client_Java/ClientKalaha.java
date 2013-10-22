@@ -14,8 +14,6 @@ public class ClientKalaha
 	private long millis;
 	private int maxCurrentDepth;
 	private boolean newDepth;
-	private int dlsCall;
-	private int outsideCount;
 
 		//sorts out commandline arguments and starts the application
 	public static void main(String args[]) throws Exception
@@ -228,9 +226,14 @@ public class ClientKalaha
 		newDepth = false;
 		millis = System.currentTimeMillis();
 		DLS2(tree, nodeDepth, output[14], output);
+		print("Nodes: "+nodeCount);
+		System.out.println((System.currentTimeMillis())-millis);
+		nodeDepth = 9;
+		DLS2(tree, nodeDepth, output[14], output);
 		while(bestBoard.getParent().getChoise() != 10){
 			bestBoard = bestBoard.getParent();
 		}
+		print(nodeDepth);
 		System.out.println((System.currentTimeMillis())-millis);
 
 		return bestBoard.getChoise();
@@ -263,8 +266,7 @@ public class ClientKalaha
 		int counter = 0;
 		boolean end = false;
 		
-		dlsCall++;
-		if (depth > maxCurrentDepth) {			
+		if (depth > maxCurrentDepth) {				
 			for (int i = 1; i<7; i++) {
 				childBoard = node.move((short)i, (short)_board[14], _board.clone());
 				if (!Arrays.equals(childBoard, _board)) {
@@ -287,6 +289,7 @@ public class ClientKalaha
 					}
 					
 					if(!end){
+						nodeCount++;
 						node.childNode.add(new AiNodeMaster(node, childBoard, childNodeValue, (char)i));
 						if (nodeDepth == depth && counter == 0) {
 							bestBoard = node.childNode.get(counter);
