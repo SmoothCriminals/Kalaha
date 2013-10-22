@@ -14,6 +14,8 @@ public class ClientKalaha
 	private long millis;
 	private int maxCurrentDepth;
 	private boolean newDepth;
+	private int dlsCall;
+	private int outsideCount;
 
 		//sorts out commandline arguments and starts the application
 	public static void main(String args[]) throws Exception
@@ -219,25 +221,18 @@ public class ClientKalaha
 			x[i] = Integer.parseInt(temp[i]);
 			output[i] = (char)x[i];
 		}
-		tree = new AiNodeMaster(null, output, (char)0, (char)10);
-		tree.setBeta((char)Double.POSITIVE_INFINITY);
-		tree.setAlpha((char)Double.NEGATIVE_INFINITY);
-		//nodeDepth = 20;
-		nodeCount = 0;
+		tree = new AiNodeMaster(null, output, (short)0, (char)10);
+		tree.setBeta((short)32700);
+		tree.setAlpha((short)-32700);
 		maxCurrentDepth = 0;
 		newDepth = false;
 		millis = System.currentTimeMillis();
-		DLS2(tree, nodeDepth, output[14], x);
-		//print(bestBoard.getParent().getChoise()+1);
+		DLS2(tree, nodeDepth, output[14], output);
 		while(bestBoard.getParent().getChoise() != 10){
 			bestBoard = bestBoard.getParent();
 		}
-		print("depth: "+maxCurrentDepth);
-		maxCurrentDepth = 0;
-		System.out.println("NodeCount: "+nodeCount);
 		System.out.println((System.currentTimeMillis())-millis);
 
-		//print(bestBoard.getParent().getChoise());
 		return bestBoard.getChoise();
 
 		
@@ -261,70 +256,60 @@ public class ClientKalaha
 
 	
 
+	
 	public void DLS2(AiNodeMaster node, int depth, int Max, char[] _board) {
 		char childBoard[];
-		int intBoard[];
-		int childNodeValue = 0;
+		short childNodeValue = (short)0;
 		int counter = 0;
 		boolean end = false;
 		
-		nodeCount++;
+		dlsCall++;
 		if (depth > maxCurrentDepth) {			
 			for (int i = 1; i<7; i++) {
-				intBoard = node.move(i, _board[14], _board.clone());
-				if (!Arrays.equals(intBoard, _board)) {
-					childBoard = intToCharConverter(intBoard).clone();
-					//print("Max: "+Max+" Board max player"+_board[14]+" depth: "+depth);
+				childBoard = node.move((short)i, (short)_board[14], _board.clone());
+				if (!Arrays.equals(childBoard, _board)) {
+					
 					if (Max == _board[14] && Max == 1) {
-						childNodeValue = (int)node.getNodeValue() + ((childBoard[7] - childBoard[0])*depth);	
-						end = alphaBeta(node, true, childNodeValue, (int)Double.POSITIVE_INFINITY);
-						//print("DLS-MAX: "+childNodeValue+"choise: "+i+" chilNodeSize: "+node.childNode.size()+" Depth: "+depth);
+						childNodeValue = (short)(node.getNodeValue() + ((childBoard[7] - childBoard[0])*depth));	
+						end = alphaBeta(node, true, childNodeValue, (short)32700);
 											
 					} else if (Max == _board[14] && Max == 2){
-						childNodeValue = (int)node.getNodeValue() + ((childBoard[0] - childBoard[7])*depth);
-						end = alphaBeta(node, true, childNodeValue, (int)Double.POSITIVE_INFINITY);
-						//print("DLS-Min: "+childNodeValue+"choise: "+i+" chilNodeSize: "+node.childNode.size()+" Depth: "+depth);
+						childNodeValue = (short)(node.getNodeValue() + ((childBoard[0] - childBoard[7])*depth));
+						end = alphaBeta(node, true, childNodeValue, (short)32700);
 					}
 					else if(Max != _board[14] && Max == 1){
-						childNodeValue = (int)node.getNodeValue() - ((childBoard[0] - childBoard[7])*depth);
-						end = alphaBeta(node, false, (int)Double.NEGATIVE_INFINITY, childNodeValue);
+						childNodeValue = (short)(node.getNodeValue() - ((childBoard[0] - childBoard[7])*depth));
+						end = alphaBeta(node, false, (short)-32700, childNodeValue);
 					}
 					else if(Max != _board[14] && Max == 2){
-						childNodeValue = (int)node.getNodeValue() - ((childBoard[7] - childBoard[0])*depth);
-						end = alphaBeta(node, false, (int)Double.NEGATIVE_INFINITY, childNodeValue);
+						childNodeValue = (short)(node.getNodeValue() - ((childBoard[7] - childBoard[0])*depth));
+						end = alphaBeta(node, false, (short)-32700, childNodeValue);
 					}
-					//print("Max: "+Max+" Board current player"+_board[14]+" depth: "+depth+" childNodeValue: "+childNodeValue+" choise: "+i);
-					//print("DLS-MAX: "+childNodeValue+"choise: "+i+" chilNodeSize: "+node.childNode.size());
 					
 					if(!end){
-						node.childNode.add(new AiNodeMaster(node, childBoard, (char)childNodeValue, (char)i));
+						node.childNode.add(new AiNodeMaster(node, childBoard, childNodeValue, (char)i));
 						if (nodeDepth == depth && counter == 0) {
 							bestBoard = node.childNode.get(counter);
 						}
 						else if (bestBoard.getNodeValue() < childNodeValue) {
 							bestBoard = node.childNode.get(counter);
 						}
-						if (counter==0 && Max == _board[14]) {
-							node.childNode.get(counter).setBeta((char)childNodeValue);
-						}
-						else if (counter == 0 && Max != _board[14]) {
-							node.childNode.get(counter).setAlpha((char)childNodeValue);
-						}
+						
 						counter++;
 						
 						if(!newDepth && (System.currentTimeMillis()-millis)>2500) {
 							newDepth = true;
 							maxCurrentDepth = 2;
 						}
-						DLS2(node.childNode.get(counter-1), depth-1, Max, intBoard);	
+						DLS2(node.childNode.get(counter-1), depth-1, Max, childBoard);	
 					}		
-				}			
+				}	
 			}			
 		}
 	}
 
 
-	public boolean alphaBeta(AiNodeMaster node, boolean MaxNode, int alpha, int beta){
+	public boolean alphaBeta(AiNodeMaster node, boolean MaxNode, short alpha, short beta){
 		
 		if (MaxNode) {
 			for (int i = 0; i < node.childNode.size(); i++) {
@@ -332,11 +317,11 @@ public class ClientKalaha
 				if (alpha >= beta) {
 					return true;		
 				}
-			node.setAlpha((char)maxAlphaBeta(alpha, node.getAlpha()));	
+			node.setAlpha(maxAlphaBeta(alpha, node.getAlpha()));	
 			}			
 		
 			if (node.childNode.size() != 0) {
-				node.setAlpha((char)alpha);
+				node.setAlpha(alpha);
 			}
 		}
 		else {
@@ -345,17 +330,17 @@ public class ClientKalaha
 				if (beta <= alpha) {
 					return true;		
 				}
-				node.setBeta((char)maxAlphaBeta(beta, node.getBeta()));	
+				node.setBeta(maxAlphaBeta(beta, node.getBeta()));	
 			}
 			if (node.childNode.size() != 0) {
-				node.setBeta((char)beta);
+				node.setBeta(beta);
 			}
 		}
 		
 		return false;
 	}
 
-	public int maxAlphaBeta(int m1, int m2){
+	public short maxAlphaBeta(short m1, short m2){
 		if (m2 > m1) {
 			return m2;
 		}
@@ -363,6 +348,7 @@ public class ClientKalaha
 			return m1;
 		}
 	}
+
 
 
 }

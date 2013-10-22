@@ -4,36 +4,36 @@ public class AiNodeMaster {
 
 	public AiNodeMaster  parentNode;
 	public ArrayList<AiNodeMaster> childNode = new ArrayList<AiNodeMaster>();
-	public char  alpha;
-	public char  beta;
+	public short  alpha;
+	public short  beta;
 	public char choise;
-	public char  nodeValue;
+	public short  nodeValue;
 	public char  currentBoard[];
 
-	public AiNodeMaster(AiNodeMaster _par, char _currentBoard[], char _nodeValue, char _choise) {
+	public AiNodeMaster(AiNodeMaster _par, char _currentBoard[], short _nodeValue, char _choise) {
 		parentNode = _par;
 		currentBoard = _currentBoard;
 		nodeValue = _nodeValue;
 		choise = _choise;		
 	}
 
-	public char getAlpha() {
+	public short getAlpha() {
 		return alpha;
 	}
 
-	public void setAlpha(char _alpha){
+	public void setAlpha(short _alpha){
 		alpha = _alpha;
 	}
 
-	public char getBeta() {
+	public short getBeta() {
 		return beta;
 	}
 
-	public void setBeta(char _beta){
+	public void setBeta(short _beta){
 		beta = _beta;
 	}
 
-	public char getNodeValue() {
+	public short getNodeValue() {
 		return nodeValue;
 	}
 
@@ -45,17 +45,17 @@ public class AiNodeMaster {
 		return choise;
 	}
 
-	public char[] move(char ambo, int player, char[] board)
+	public char[] move(short ambo, short player, char[] board)
 	{
-		char start = ambo;
-		char n = 0;
-		int current;
+		short start = ambo;
+		short n = 0;
+		short current;
 		if(player == 2)
 		{
 			start +=7;
 		}
-		if (board[start] != 0) {
-			n = board[start];
+		if ((int)board[start] != 0) {
+			n = (short)board[start];
 			board[start] = 0;
 			current = start;
 
@@ -72,20 +72,20 @@ public class AiNodeMaster {
 				else if (player == 1 && current == 0) {
 					current++;
 				}
-				board[current] = board[current]++;				
+				board[current] = (char)((int)board[current]+1);				
 			}
 
-			if ( (player == 1) && (current > 0 && current < 7) && (board[current] == 1) && (board[current+7] > 0)) {
-				board[7] = board[7] + board[current] + board[current+7];
-				board[14] = next(board[14]);
+			if ( (player == 1) && (current > 0 && current < 7) && ((int)board[current] == 1) && ((int)board[current+7] > 0)) {
+				board[7] = (char)((int)board[7] + (int)board[current] + (int)board[current+7]);
+				board[14] = (char)next(board[14]);
 			}
-			else if ((player == 2) && (current < 14 && current > 7) && (board[current] == 1) && (board[current] > 0) ) {
-				board[0] = board[0] + board[current] + board[current-7];
-				board[14] = next(board[14]);
+			else if ((player == 2) && (current < 14 && current > 7) && ((int)board[current] == 1) && ((int)board[current] > 0) ) {
+				board[0] = (char)((int)board[0] + (int)board[current] + (int)board[current-7]);
+				board[14] = (char)next(board[14]);
 			}
 
 			if (!(((player == 1) && (current == 7)) || ((player == 2) && (current == 0)))) {
-				board[14] = next(board[14]);
+				board[14] = (char)next(board[14]);
 			}
 		}	
 		return board;
