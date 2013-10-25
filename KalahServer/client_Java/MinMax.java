@@ -4,14 +4,15 @@ public class MinMax{
 
 	AiNodeMaster bestBoard;
 	int nodeDepth;
+	boolean first = true;
+	public int nodeCount = 0;
 
 	public MinMax(int _depth, char[] _board){
 		nodeDepth = _depth;
 		AiNodeMaster tree;
-		tree = new AiNodeMaster(null, _board, (short)0, (char)10);
-		tree.setBeta((short)32700);
-		tree.setAlpha((short)-32700);		
-		DLS2(tree, _depth, _board[14], _board);		
+		tree = new AiNodeMaster(null, _board, (short)0, (char)10, (short)-32700, (short)32700);	
+		bestBoard = tree;	
+		DLS2(tree, _depth, (int)_board[14], _board);		
 	}
 
 	public int evaluation(){
@@ -28,80 +29,104 @@ public class MinMax{
 		int counter = 0;
 		boolean end = false;
 		
+		
 		if (depth > 0) {				
 			for (int i = 1; i<7; i++) {
 				childBoard = node.move((short)i, (short)_board[14], _board.clone());
 				if (!Arrays.equals(childBoard, _board)) {
 					
-					if (Max == _board[14] && Max == 1) {
-						childNodeValue = (short)(node.getNodeValue() + ((childBoard[7] - childBoard[0])*depth));	
-						end = alphaBeta(node, true, childNodeValue, (short)32700);
-											
-					} else if (Max == _board[14] && Max == 2){
-						childNodeValue = (short)(node.getNodeValue() + ((childBoard[0] - childBoard[7])*depth));
-						end = alphaBeta(node, true, childNodeValue, (short)32700);
+					if (MaxNode(Max, _board)) {
+						node.setAlpha(alphaBeta(node, depth, Max, (short)-32700, (short)32700));
+						if (Max == 1) {
+							childNodeValue = (short)(node.getNodeValue() + ((childBoard[7] - childBoard[0])));
+						}
+						else{
+							childNodeValue = (short)(node.getNodeValue() + ((childBoard[0] - childBoard[7])));
+						}
 					}
-					else if(Max != _board[14] && Max == 1){
-						childNodeValue = (short)(node.getNodeValue() - ((childBoard[0] - childBoard[7])*depth));
-						end = alphaBeta(node, false, (short)-32700, childNodeValue);
+					else {
+						node.setBeta(alphaBeta(node, depth, Max, (short)-32700, (short)32700));
+						if (Max == 1) {
+							childNodeValue = (short)(node.getNodeValue() - ((childBoard[0] - childBoard[7])));
+						}
+						else{
+							childNodeValue = (short)(node.getNodeValue() - ((childBoard[7] - childBoard[0])));
+						}
 					}
-					else if(Max != _board[14] && Max == 2){
-						childNodeValue = (short)(node.getNodeValue() - ((childBoard[7] - childBoard[0])*depth));
-						end = alphaBeta(node, false, (short)-32700, childNodeValue);
+					if (node.getAlpha() >= node.getBeta()) {
+						end = true;
 					}
-					
 					if(!end){
-						node.childNode.add(new AiNodeMaster(node, childBoard, childNodeValue, (char)i));
-						if (nodeDepth == depth && counter == 0) {
+						node.childNode.add(new AiNodeMaster(node, childBoard, childNodeValue, (char)i, node.getAlpha(), node.getBeta() ));
+						//System.out.println("Value: "+childNodeValue+" choise: "+i+" Depth: "+depth+" Alpha"+node.getAlpha()+" Beta: "+node.getBeta());
+						if (depth == nodeDepth && counter == 0 && first) {
 							bestBoard = node.childNode.get(counter);
+							first = false;
 						}
-						else if (bestBoard.getNodeValue() < childNodeValue) {
+						if (bestBoard.getNodeValue() < childNodeValue) {
+							//System.out.println(" the best choise is: "+i);
 							bestBoard = node.childNode.get(counter);
-						}
+						}		
 						
 						counter++;
-						
+						nodeCount++;
 						DLS2(node.childNode.get(counter-1), depth-1, Max, childBoard);	
-					}		
+					}
+					else{
+						//System.out.println("break");
+					}							
 				}	
 			}			
+				
+		}
+	}	
+
+
+	public boolean MaxNode(int Max, char[] _board){
+		if ((int)_board[14] == Max){
+			return true;
+		}
+		else{
+			return false;
 		}
 	}
 
+	public short alphaBeta(AiNodeMaster node, int depth, int Max, short alpha, short beta){
 
-	public boolean alphaBeta(AiNodeMaster node, boolean MaxNode, short alpha, short beta){
-		
-		if (MaxNode) {
+		if (depth == 0) {
+			return node.getNodeValue();
+		}
+		if (MaxNode(Max, node.getBoard())) {
 			for (int i = 0; i < node.childNode.size(); i++) {
-				alpha = maxAlphaBeta(alpha, node.getAlpha());
+				alpha = max(alpha, alphaBeta(node.childNode.get(i), depth-1, Max, alpha, beta));
 				if (alpha >= beta) {
-					return true;		
-				}
-			node.setAlpha(maxAlphaBeta(alpha, node.getAlpha()));	
-			}			
-		
-			if (node.childNode.size() != 0) {
-				node.setAlpha(alpha);
-			}
+					break;
+				}				
+			}	
+			return alpha;
 		}
-		else {
+		else{
 			for (int i = 0; i < node.childNode.size(); i++) {
-				beta = maxAlphaBeta(beta, node.getBeta());
-				if (beta <= alpha) {
-					return true;		
-				}
-				node.setBeta(maxAlphaBeta(beta, node.getBeta()));	
+				beta = min(beta, alphaBeta(node.childNode.get(i), depth-1, Max, alpha, beta));	
+				if (alpha >= beta) {
+					break;
+				}				
 			}
-			if (node.childNode.size() != 0) {
-				node.setBeta(beta);
-			}
-		}
-		
-		return false;
+			return beta;
+		}	
 	}
 
-	public short maxAlphaBeta(short m1, short m2){
+	public short max(short m1, short m2){
 		if (m2 > m1) {
+			return m2;
+		}
+		else{
+			return m1;
+		}
+	}
+
+	public short min(short m1, short m2){
+		if (m2 < m1) {
 			return m2;
 		}
 		else{

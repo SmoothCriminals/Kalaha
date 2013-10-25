@@ -196,6 +196,7 @@ public class ClientKalaha
 		String temp[];
 		int intBoard[];
 		char output[];
+		int choice = 0;
 		
 		temp = _board.split(";");
 		intBoard = new int[temp.length];
@@ -206,11 +207,53 @@ public class ClientKalaha
 			output[i] = (char)intBoard[i];
 		}
 		millis = System.currentTimeMillis();
-		MinMax myForest = new MinMax(_depth, output);
+
+		aiThread myThread;
+		aiThread myThread2;
+  
+      // Ab jetzt wird "Demo-Thread"
+      // im Hintergrund ausgegeben:
+      	//myThread = new aiThread();
+      	//myThread.board = output.clone();
+      	//myThread.depth = 5;
+      	//myThread.start();
+
+      	int tempDepth = 8;
+      	myThread = new aiThread();
+      	myThread.board = output.clone();
+      	myThread.depth = tempDepth;
+      	//myThread2 = new aiThread();
+      	//myThread2.board = output.clone();
+      	//myThread2.depth = tempDepth;
+      	myThread.start();
+      	//myThread2.start();
+      	while (true) {
+			//System.out.println(tempDepth);
+      		Thread.sleep(1);
+      		if ((System.currentTimeMillis()-millis)>2600) {
+      			System.out.println((System.currentTimeMillis())-millis);
+				System.out.println("AiChoice: "+choice);
+				myThread.stop();
+				break;
+			}
+      		if (myThread.isDone) {
+      			tempDepth++;
+      			choice = myThread.aiChoice;
+      			myThread.stop();
+      			myThread = new aiThread();
+      			myThread.board = output.clone();
+      			myThread.depth = tempDepth;
+      			myThread.start();
+      			//break;
+      		}
+      	}
+      	
+
+		//MinMax myForest = new MinMax(_depth, output);
 
 		System.out.println((System.currentTimeMillis())-millis);
-
-		return myForest.evaluation();
+		System.out.println("AiChoice: "+choice);
+		return choice;
 
 		
 	}	

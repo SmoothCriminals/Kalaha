@@ -10,11 +10,13 @@ public class AiNodeMaster {
 	public short  nodeValue;
 	public char  currentBoard[];
 
-	public AiNodeMaster(AiNodeMaster _par, char _currentBoard[], short _nodeValue, char _choise) {
+	public AiNodeMaster(AiNodeMaster _par, char _currentBoard[], short _nodeValue, char _choise, short _alpha, short _beta) {
 		parentNode = _par;
 		currentBoard = _currentBoard;
 		nodeValue = _nodeValue;
-		choise = _choise;		
+		choise = _choise;	
+		alpha = _alpha;
+		beta = _beta;	
 	}
 
 	public short getAlpha() {
