@@ -52,6 +52,8 @@ public class AiNodeMaster {
 		short start = ambo;
 		short n = 0;
 		short current;
+		boolean endingMove = false;
+
 		if(player == 2)
 		{
 			start +=7;
@@ -89,6 +91,31 @@ public class AiNodeMaster {
 			if (!(((player == 1) && (current == 7)) || ((player == 2) && (current == 0)))) {
 				board[14] = (char)next(board[14]);
 			}
+			for (int i = 1; i < 7; i++) {
+				if (player == 1 && (int)board[i] == 0) {
+					endingMove = true;
+				}
+				else if(player == 2 && (int)board[i+7] == 0){
+					endingMove = true;
+				}
+				else{
+					return board;
+				}
+			}
+
+			if (endingMove) {
+				for (int i = 1; i < 7; i++) {
+					if (player == 1) {
+						board[0] = (char)((int)board[0] + (int)board[i+7]);
+					}
+					else{
+						board[7] = (char)((int)board[7] + (int)board[i]);
+					}
+				}
+			}
+
+
+
 		}	
 		return board;
 	}
